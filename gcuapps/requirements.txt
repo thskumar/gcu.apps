@@ -2,3 +2,4 @@ streamlit
 fpdf 
 streamlit_option_menu
 xlrd
+openpyxl
