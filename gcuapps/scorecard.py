@@ -6,12 +6,9 @@ import zipfile
 import os
 
 def app():
+    # The Headers and label
     st.header("Reads students' score and generates score cards in PDFs")
     st.text("The score should be in CSV format")
-
-    # The require paths
-    # data_path = '/Users/GUEST123/Data/gcu/results/'
-    #results_path = '/Users/GUEST123/pdf/gcu results/'
 
     uploaded_file = st.file_uploader("Upload the Result data in csv format")
     if uploaded_file is not None:
@@ -19,11 +16,13 @@ def app():
 
         program_list = df['Program'].unique()
         for program in program_list:
-            one_program = df[(program == df['Program'])]  # This extracts records of only one program
+            # This extracts records of only one program
+            one_program = df[(program == df['Program'])]  
 
             file_names = []
-            student_list = one_program['Enrollment No.'].unique()  # This find the students of a program
-            for student in student_list:  # Do this for all the students
+            # This find the students of a program
+            student_list = one_program['Enrollment No.'].unique()  
+            for student in student_list:                                                   # Do this for all the students
                 one_student = one_program[(one_program['Enrollment No.'] == student)]
                 one_student['Remarks'] = one_student['Remarks'].fillna(' ')
                 one_student_grade = one_student[
@@ -36,6 +35,7 @@ def app():
             with zipfile.ZipFile(f'temp/{program}.zip', 'w', compression=zipfile.ZIP_DEFLATED) as my_zip:
                 for fn in file_names:
                     my_zip.write(f'temp/{fn}')
+                    #my_zip.save(f'temp/{fn}')
                     #my_zip.write(f'{fn}')
 
             # open it as a regular file and supply to the button as shown in the example:
