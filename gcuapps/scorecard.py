@@ -131,7 +131,8 @@ def create_pdf(df, df_grades):
     SGPA = credit_point / total_credit
 
     # Get today's date
-    date = datetime.today().strftime('%d-%m-%Y')
+    #date = datetime.today().strftime('%d-%m-%Y')
+    date = '05-01-2024'
 
     # Write the student's details
     pdf.cell(150, 5,
