@@ -3,12 +3,16 @@ from fpdf import FPDF
 import pandas as pd
 from datetime import datetime
 import zipfile
+import numpy as np
 import os
 
 def app():
-    # The Headers and label
     st.header("Reads students' score and generates score cards in PDFs")
     st.text("The score should be in CSV format")
+
+    # The require paths
+    # data_path = '/Users/GUEST123/Data/gcu/results/'
+    #results_path = '/Users/GUEST123/pdf/gcu results/'
 
     uploaded_file = st.file_uploader("Upload the Result data in csv format")
     if uploaded_file is not None:
@@ -16,13 +20,11 @@ def app():
 
         program_list = df['Program'].unique()
         for program in program_list:
-            # This extracts records of only one program
-            one_program = df[(program == df['Program'])]  
+            one_program = df[(program == df['Program'])]  # This extracts records of only one program
 
             file_names = []
-            # This find the students of a program
-            student_list = one_program['Enrollment No.'].unique()  
-            for student in student_list:                                                   # Do this for all the students
+            student_list = one_program['Enrollment No.'].unique()  # This find the students of a program
+            for student in student_list:  # Do this for all the students
                 one_student = one_program[(one_program['Enrollment No.'] == student)]
                 one_student['Remarks'] = one_student['Remarks'].fillna(' ')
                 one_student_grade = one_student[
@@ -35,7 +37,6 @@ def app():
             with zipfile.ZipFile(f'temp/{program}.zip', 'w', compression=zipfile.ZIP_DEFLATED) as my_zip:
                 for fn in file_names:
                     my_zip.write(f'temp/{fn}')
-                    #my_zip.save(f'temp/{fn}')
                     #my_zip.write(f'{fn}')
 
             # open it as a regular file and supply to the button as shown in the example:
@@ -111,28 +112,37 @@ def create_pdf(df, df_grades):
     # Write the report details
     pdf.cell(200, 5, report_name, align='C', ln=True)
     pdf.cell(200, 5, exam_name, align='C', ln=True)
-    pdf.ln(20)
+    pdf.ln(10)
 
     # Get the student's details
-    abc_id = df['ABC ID'].iloc[0]
+    #abc_id = df['ABC ID'].iloc[0]
+    if df['ABC ID'].iloc[0] is np.nan:
+        abc_id = ' '
+    else:
+        abc_id = df['ABC ID'].iloc[0]
     enroll_id = df['Enrollment No.'].iloc[0]
     std_name = df['Student Name'].iloc[0]
     program = df['Program'].iloc[0]
     semester = df['Semester'].iloc[0]
+
+    # Calculate SGPA
+    credit_point = sum(df_grades['Credit Point'])
+    total_credit = sum(df_grades['Credit'])
+    SGPA = credit_point / total_credit
 
     # Get today's date
     date = datetime.today().strftime('%d-%m-%Y')
 
     # Write the student's details
     pdf.cell(150, 5,
-             f'ABC ID      \t\t\t\t\t\t   : {abc_id}                              \t\t\t            Date  \t\t\t    : {date}',
+             f'ABC ID      \t\t\t\t\t\t   : {abc_id}                          \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t            Date  \t\t\t    : {date}',
              align='L', ln=True)  # , ln=True)
     pdf.cell(150, 5,
-             f'Enrollment No. \t\t: {enroll_id}                                  \t\t\t\t\t\tSemester  : {semester}',
+             f'Enrollment No. \t\t: {enroll_id}                              \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t Semester\t: {semester} ',
              align='L', ln=True)  # , ln=True)
     pdf.cell(150, 5, f'Student Name   \t: {std_name}', ln=True)  # , ln=True)
     pdf.cell(150, 5, f'Program       \t\t\t\t\t : {program}', ln=True)  # , ln=True)
-    pdf.ln(20)
+    pdf.ln(10)
 
     ### Use the function defined earlier to print the DataFrame as a table on the PDF
     output_df_to_pdf(pdf, df_grades)
@@ -144,13 +154,13 @@ def create_pdf(df, df_grades):
     pdf.set_font('Arial', '', 10)
     pdf.cell(150, 5, f'Total Credit Earned       : {total_credit_earned}', ln=True)
     pdf.cell(150, 5, f'Total Credit Point          : {total_credit_point}', ln=True)
-    pdf.cell(150, 5, f'SGPA                            : ', ln=True)
+    pdf.cell(150, 5, f'SGPA                            : {SGPA} ', ln=True)
 
     # Disclaimer
-    pdf.ln(10)
-    pdf.cell(150, 5, f'NC: Not Cleared', ln=True)
+    pdf.ln(5)
+    pdf.cell(150, 5, f'C-Cleared; NC-Not Cleared', ln=True)
     pdf.set_font('Arial', '', 9)
-    pdf.ln(20)
+    pdf.ln(10)
     pdf.cell(150, 5,
              'Disclaimer: Note that this is a computer generated mark sheet and does not require any signature. At any stage,',
              ln=True)
@@ -160,7 +170,7 @@ def create_pdf(df, df_grades):
     pdf.cell(150, 5, 'corresponding CGPA and SGPA.', ln=True)
 
     # Controller
-    pdf.ln(30)
+    pdf.ln(20)
     pdf.set_font('Arial', '', 10)
     pdf.cell(160, 5,
              '                                                                                                        Controller',
