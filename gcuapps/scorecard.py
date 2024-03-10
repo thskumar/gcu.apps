@@ -159,8 +159,8 @@ def create_pdf(df, df_grades):
 
     # Disclaimer
     pdf.ln(5)
-    pdf.cell(150, 5, f'C-Cleared; NC-Not Cleared', ln=True)
     pdf.set_font('Arial', '', 9)
+    pdf.cell(150, 5, f'C-Cleared; NC-Not Cleared', ln=True)
     pdf.ln(10)
     pdf.cell(150, 5,
              'Disclaimer: Note that this is a computer generated mark sheet and does not require any signature. At any stage,',
