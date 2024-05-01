@@ -3,3 +3,5 @@ fpdf
 streamlit_option_menu
 xlrd
 openpyxl
+html5lib
+xlsxwriter
