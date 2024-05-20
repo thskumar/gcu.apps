@@ -9,7 +9,15 @@ import os
 def app():
     st.header("Reads students' score and generates score cards in PDFs")
     st.text("The score should be in CSV format")
-
+    
+    # Using Select
+    aca_session = st.selectbox("Select session:",
+            options = ["Monsoon","Winter"])
+    year = st.selectbox("Select year:",
+            options = ["2023","2024", "2025","2026","2027","2028", "2029","2030","2031","2032", "2033","2034"])
+    batch = f"{aca_session} {year}" 
+    #st.write('You selected', batch)
+    
     # The require paths
     # data_path = '/Users/GUEST123/Data/gcu/results/'
     #results_path = '/Users/GUEST123/pdf/gcu results/'
@@ -30,7 +38,7 @@ def app():
                 one_student_grade = one_student[
                     ['Course Code', 'Course Name', 'Credit', 'Grade Obtained', 'Grade Point', 'Credit Point', 'Remarks']]
                 #create_pdf(one_student, one_student_grade)
-                file_names.append(create_pdf(one_student, one_student_grade))
+                file_names.append(create_pdf(one_student, one_student_grade, batch))
 
             # Zip the files
             st.write(f"Download zip file for {program}")
@@ -48,6 +56,7 @@ def app():
                     mime="application/zip"
                 )
         st.write("Congratulation! Score Card converted to PDFs")
+        
 def output_df_to_pdf(pdf, df):
     # A cell is a rectangular area, possibly framed, which contains some text
     # Set the width and height of cell
@@ -86,14 +95,14 @@ def output_df_to_pdf(pdf, df):
         pdf.ln()
 
 
-def create_pdf(df, df_grades):
+def create_pdf(df, df_grades, batch):
     image_path = '/Users/GUEST123/images/gcu/'
     #pdf_path = '/Users/GUEST123/pdf/gcu results/'
     # The headings and Labels
     gcu = "Girijananda Chowdhury University"
     gcu_address = "Hathkhowapara, Azara, Guwahati, Assam 781017"
     report_name = "Grade Card"
-    exam_name = "End Semester Examination, Monsoon 2023"
+    exam_name = f"End Semester Examination, {batch}"
 
     # 1. Set up the PDF doc basics
     pdf = FPDF('P', 'mm', 'A4')
@@ -128,11 +137,10 @@ def create_pdf(df, df_grades):
     # Calculate SGPA
     credit_point = sum(df_grades['Credit Point'])
     total_credit = sum(df_grades['Credit'])
-    SGPA = credit_point / total_credit
+    SGPA = np.round(credit_point / total_credit, 2)
 
     # Get today's date
-    #date = datetime.today().strftime('%d-%m-%Y')
-    date = '05-01-2024'
+    date = datetime.today().strftime('%d-%m-%Y')
 
     # Write the student's details
     pdf.cell(150, 5,
@@ -159,16 +167,16 @@ def create_pdf(df, df_grades):
 
     # Disclaimer
     pdf.ln(5)
-    pdf.set_font('Arial', '', 9)
     pdf.cell(150, 5, f'C-Cleared; NC-Not Cleared', ln=True)
+    pdf.set_font('Arial', '', 9)
     pdf.ln(10)
     pdf.cell(150, 5,
-             'Disclaimer: Note that this is a computer generated mark sheet and does not require any signature. At any stage,',
+             'Disclaimer: Note that this is a computer generated mark sheet and does not require any signature. At any stage, if it is found',
              ln=True)
     pdf.cell(150, 5,
-             'if it is found incorrect due to any valid reason, after due verification, this will lead to a change in the grades and ',
+             'incorrect due to any valid reason, after due verification, this will lead to a change in the grades and corresponding CGPA and SGPA.',
              ln=True)
-    pdf.cell(150, 5, 'corresponding CGPA and SGPA.', ln=True)
+    #pdf.cell(150, 5, '', ln=True)
 
     # Controller
     pdf.ln(20)
