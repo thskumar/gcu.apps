@@ -10,11 +10,15 @@ def app():
     st.header("Reads students' score and generates score cards in PDFs")
     st.text("The score should be in CSV format")
     
-    # Using Select
-    aca_session = st.selectbox("Select session:",
-            options = ["Monsoon","Winter"])
-    year = st.selectbox("Select year:",
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        aca_session = st.selectbox("Select session:", options = ["Monsoon","Winter"])
+    with col2:
+         year = st.selectbox("Select year:",
             options = ["2023","2024", "2025","2026","2027","2028", "2029","2030","2031","2032", "2033","2034"])
+    
+    # Using Select
     batch = f"{aca_session} {year}" 
     #st.write('You selected', batch)
     
@@ -133,7 +137,7 @@ def create_pdf(df, df_grades, batch):
     std_name = df['Student Name'].iloc[0]
     program = df['Program'].iloc[0]
     semester = df['Semester'].iloc[0]
-
+    
     # Calculate SGPA
     credit_point = sum(df_grades['Credit Point'])
     total_credit = sum(df_grades['Credit'])
@@ -142,21 +146,19 @@ def create_pdf(df, df_grades, batch):
     # Get today's date
     date = datetime.today().strftime('%d-%m-%Y')
 
-    # Write the student's details
-    pdf.cell(150, 5,
-             f'ABC ID      \t\t\t\t\t\t   : {abc_id}                          \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t            Date  \t\t\t    : {date}',
-             align='L', ln=True)  # , ln=True)
-    pdf.cell(150, 5,
-             f'Enrollment No. \t\t: {enroll_id}                              \t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t Semester\t: {semester} ',
-             align='L', ln=True)  # , ln=True)
+    # Write the student's details 
+    pdf.cell(130, 5, f'ABC ID      \t\t\t\t\t\t   : {abc_id}', align='L', ln=False)  # , ln=True)
+    pdf.cell(50, 5, f'Date      \t\t\t   : {date}', align='L', ln=True)  # , ln=True)
+    pdf.cell(130, 5, f'Enrollment No. \t\t: {enroll_id}', align='L', ln=False)  # , ln=True)
+    pdf.cell(50, 5, f'Semester\t\t\t\t: {semester} ', align='L', ln=True)  # , ln=True)
     pdf.cell(150, 5, f'Student Name   \t: {std_name}', ln=True)  # , ln=True)
     pdf.cell(150, 5, f'Program       \t\t\t\t\t : {program}', ln=True)  # , ln=True)
     pdf.ln(10)
-
+    
     ### Use the function defined earlier to print the DataFrame as a table on the PDF
     output_df_to_pdf(pdf, df_grades)
-    pdf.ln(5)
-
+    pdf.ln(10)
+    
     # Calculate totals
     total_credit_earned = sum(df_grades.Credit)
     total_credit_point = sum(df_grades['Credit Point'])
@@ -166,7 +168,7 @@ def create_pdf(df, df_grades, batch):
     pdf.cell(150, 5, f'SGPA                            : {SGPA} ', ln=True)
 
     # Disclaimer
-    pdf.ln(5)
+    pdf.ln(10)
     pdf.cell(150, 5, f'C-Cleared; NC-Not Cleared', ln=True)
     pdf.set_font('Arial', '', 9)
     pdf.ln(10)
@@ -178,13 +180,13 @@ def create_pdf(df, df_grades, batch):
              ln=True)
     #pdf.cell(150, 5, '', ln=True)
 
-    # Controller
+    # Write the student's details 
     pdf.ln(20)
-    pdf.set_font('Arial', '', 10)
-    pdf.cell(160, 5,
-             '                                                                                                        Controller',
-             'L', ln=True)
-    pdf.cell(160, 5, f'                                                                                         {gcu}',
-             'RL', ln=True)
+    pdf.cell(130, 5, '', align='L', ln=False)  # , ln=True)
+    pdf.cell(50, 5, 'Controller of Examinations', align='L', ln=True)  # , ln=True)
+    pdf.cell(120, 5, '', align='L', ln=False)  # , ln=True)
+    pdf.cell(50, 5, f'{gcu}, Assam ', align='L', ln=True)  # , ln=True)
+    
     pdf.output(f"temp/{enroll_id}.pdf", 'F')
     return f"{enroll_id}.pdf"
+    
