@@ -136,7 +136,9 @@ def create_pdf(df, df_grades, batch):
         abc_id = ' '
     else:
         abc_id = df['ABC ID'].iloc[0]
+    enroll_id = np.round(df['Enrollment No.'].iloc[0],0)
     enroll_id = int(df['Enrollment No.'].iloc[0])
+    
     std_name = df['Student Name'].iloc[0]
     program = df['Program'].iloc[0]
     semester = df['Semester'].iloc[0]
