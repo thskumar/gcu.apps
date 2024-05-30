@@ -29,7 +29,7 @@ def app():
     uploaded_file = st.file_uploader("Upload the Result data in csv format")
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
-
+        df['ABC ID'] = df['ABC ID'].fillna('')
         program_list = df['Program'].unique()
         for program in program_list:
             one_program = df[(program == df['Program'])]  # This extracts records of only one program
@@ -91,7 +91,10 @@ def output_df_to_pdf(pdf, df):
     # Loop over to print each data in the table
     for row in range(0, len(df)):
         for width, col in zip(width_sequence, cols):
-            value = str((df.iloc[row][col]))
+            if col=='Credit':
+                value = str(int((df.iloc[row][col])))
+            else:    
+                value = str((df.iloc[row][col]))
             if width == cell_width_long:
                 pdf.cell(width, cell_height, value, align='L', border=1)
             else:
@@ -169,7 +172,7 @@ def create_pdf(df, df_grades, batch):
 
     # Disclaimer
     pdf.ln(10)
-    pdf.cell(150, 5, f'C-Cleared; NC-Not Cleared', ln=True)
+    pdf.cell(150, 5, f'NC-Not Cleared', ln=True)
     pdf.set_font('Arial', '', 9)
     pdf.ln(10)
     pdf.cell(150, 5,
