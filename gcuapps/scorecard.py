@@ -91,7 +91,7 @@ def output_df_to_pdf(pdf, df):
     # Loop over to print each data in the table
     for row in range(0, len(df)):
         for width, col in zip(width_sequence, cols):
-            if col=='Credit':
+            if col in ['Credit','Grade Point','Credit Point']:
                 value = str(int((df.iloc[row][col])))
             else:    
                 value = str((df.iloc[row][col]))
