@@ -17,6 +17,8 @@ def app():
     with col2:
          year = st.selectbox("Select year:",
             options = ["2023","2024", "2025","2026","2027","2028", "2029","2030","2031","2032", "2033","2034"])
+    with col3:
+        date = st.text_input("Enter date (dd-mm-yyyy):")
     
     # Using Select
     batch = f"{aca_session} {year}" 
@@ -42,7 +44,7 @@ def app():
                 one_student_grade = one_student[
                     ['Course Code', 'Course Name', 'Credit', 'Grade Obtained', 'Grade Point', 'Credit Point', 'Remarks']]
                 #create_pdf(one_student, one_student_grade)
-                file_names.append(create_pdf(one_student, one_student_grade, batch))
+                file_names.append(create_pdf(one_student, one_student_grade, batch, date))
 
             # Zip the files
             st.write(f"Download zip file for {program}")
@@ -102,7 +104,7 @@ def output_df_to_pdf(pdf, df):
         pdf.ln()
 
 
-def create_pdf(df, df_grades, batch):
+def create_pdf(df, df_grades, batch, date):
     image_path = '/Users/GUEST123/images/gcu/'
     #pdf_path = '/Users/GUEST123/pdf/gcu results/'
     # The headings and Labels
@@ -149,7 +151,7 @@ def create_pdf(df, df_grades, batch):
     SGPA = np.round(credit_point / total_credit, 2)
 
     # Get today's date
-    date = datetime.today().strftime('%d-%m-%Y')
+    #date = datetime.today().strftime('%d-%m-%Y')
 
     # Write the student's details 
     pdf.cell(130, 5, f'ABC ID      \t\t\t\t\t\t   : {abc_id}', align='L', ln=False)  # , ln=True)
