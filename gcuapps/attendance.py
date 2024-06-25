@@ -5,7 +5,7 @@ import numpy as np
 #import openpyxl
 import utility as ut # My utility file
 
-
+# leave data from ERP -> emp leave dashboard, give dates and search
 #@st.cache_data
 #def convert_df(df):
     # IMPORTANT: Cache the conversion to prevent computation on every rerun
@@ -156,7 +156,7 @@ def app():
     holidays = df_faculty_final['Absent'].mode()[0]
 
     # Number of working days and holidays (non teaching)
-    working_days_staff = df_admin_final['Present'].mode()[0]
+    working_days_staff = working_days
     holidays_staff = df_admin_final['Absent'].mode()[0]
 
     # late faculties
@@ -182,8 +182,8 @@ def app():
     df_final_report['leave allowed'] = df_final_report['sanctioned leaves'] + \
                                     df_final_report['exempted_hd']*0.5 + df_final_report['exempted_fd']
     df_final_report['working days'] = int(working_days)
-    df_final_report['Absent'] = df_final_report['working days'] - df_final_report['Present']
-    df_final_report['unauthorised leave'] = np.abs(df_final_report['Absent'] - df_final_report['leave allowed'])
+    df_final_report['Absent'] = df_final_report.apply(lambda x: x['leave allowed'] if x['leave allowed']>x['Absent'] else x['working days']-x['Present'], axis=1)
+    df_final_report['unauthorised leave'] = df_final_report.apply(lambda x: 0 if x['leave allowed']>x['Absent'] else x['Absent']-x['leave allowed'], axis=1)
 
     df_final_report=df_final_report[['Emp ID','Name','Designation','Department','working days','Present','Absent','leave allowed','unauthorised leave']]
     #'Emp ID','Name','Designation','Department','working days','Present','Absent','leave allowed','unauthorise leave'
@@ -212,10 +212,10 @@ def app():
     df_final_rep_nt['leave allowed'] = df_final_rep_nt['sanctioned leaves'] + \
                                            df_final_rep_nt['exempted_hd'] * 0.5 + df_final_rep_nt['exempted_fd']
     df_final_rep_nt['working days'] = int(working_days_staff)
-    df_final_rep_nt['Absent'] = df_final_rep_nt['working days'] - df_final_rep_nt['Present']
-    df_final_rep_nt['unauthorised leave'] = np.abs(df_final_rep_nt['Absent'] - df_final_rep_nt['leave allowed'])
+    df_final_rep_nt['Absent'] = df_final_rep_nt.apply(lambda x: x['leave allowed'] if x['leave allowed']>x['Absent'] else x['working days']-x['Present'], axis=1)
+    df_final_rep_nt['unauthorised leave'] = df_final_rep_nt.apply(lambda x: 0 if x['leave allowed']>x['Absent'] else x['Absent']-x['leave allowed'], axis=1)
+    
     #st.write(df_final_rep_nt.head())
-
     df_final_report_nt = df_final_rep_nt[['Emp ID', 'Name', 'Designation', 'Department', 'working days', 'Present', 'Absent', 'leave allowed',
              'unauthorised leave']]
 
@@ -235,14 +235,3 @@ def app():
             file_name=f'report_staffs.xlsx',
             mime="application/zip"
         )
-
-
-
-
-
-
-
-
-
-
-
