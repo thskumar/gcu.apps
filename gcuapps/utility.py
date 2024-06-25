@@ -1,5 +1,5 @@
 import pandas as pd
-
+"""
 def read_file():
     #key = str(key)
     uploaded_file = st.file_uploader("Upload the biometric file in excel format")#, key=key)  #key=f"{key}"
@@ -7,10 +7,15 @@ def read_file():
         df = pd.read_excel(uploaded_file) # , encoding="ISO-8859-1")  #key=count
     else:
         return None
-
+"""
 
 def split_file(df):
-      # Calculate all the starting rows and gaps
+        # pinking up the dates
+        dates = list(df.loc[6])
+        dates = [str(item).zfill(2) for item in dates]
+        #dates = dates[2:]
+    
+        # Calculate all the starting rows and gaps
         gap = 13
         start_name = 4
         start_clock_in = 7
@@ -25,13 +30,24 @@ def split_file(df):
         df_clock_out = df[df.index.isin(selected_index_clock_out)]
 
         # rename columns
-        df_clock_in.columns = [f'clock_in_{i}' for i in range(df_clock_in.shape[1])]
-        df_clock_out.columns = [f'clock_out_{i}' for i in range(df_clock_out.shape[1])]
+        #df_clock_in.columns = [f'clock_in_{i}' for i in range(df_clock_in.shape[1])]
+        #df_clock_out.columns = [f'clock_out_{i}' for i in range(df_clock_out.shape[1])]
 
-        # drop first columns
+        # rename columns
+        #print("dates")
+        #print(dates)
+        df_clock_in.columns = [f'clock_in_{d}' for d in dates]
+        df_clock_out.columns = [f'clock_out_{d}' for d in dates]
+
+        # drop unwanted columns
         # biometric.drop(['Monthly Attendance Summary'],  inplace=True, axis=1)
-        df_clock_in.drop(['clock_in_0'], inplace=True, axis=1)
-        df_clock_out.drop(['clock_out_0'], inplace=True, axis=1)
+        #df_clock_in.drop(['clock_in_0'], inplace=True, axis=1)
+        #df_clock_out.drop(['clock_out_0'], inplace=True, axis=1) clock_out_nan
+        df_clock_in.drop(['clock_in_nan'], inplace=True, axis=1) 
+        df_clock_out.drop(['clock_out_nan'], inplace=True, axis=1) 
+
+        # droping 25 as we don't have data
+        df_clock_in.drop(['clock_in_25'], inplace=True, axis=1) 
 
         # drop all columns with no entry
         df_biometric.dropna(axis=1, how='all', inplace=True)
@@ -57,9 +73,9 @@ def split_file(df):
         df_in = df_in.fillna(0)
         df_out = df_out.fillna(0)
         df_all = pd.concat([df_in, df_clock_out], axis=1)
+        df_all = df_all.fillna(0)
 
         return df_all, df_in, df_out
-
 # this function merges two dataframes after calculating the late entries
 def merge_files(df_in, df_out):
     time_in = (8, 45)
@@ -72,6 +88,11 @@ def merge_files(df_in, df_out):
 
     cols_in = df_in.columns[4:]
     cols_out = df_out.columns[4:]
+    
+    # exclude 25 this time as no data is available
+    #cols_in = [col for col in cols_in if col not in ['clock_in_nan','clock_in_25']]
+    #cols_out = [col for col in cols_out if col not in ['clock_out_nan']
+                
     partial_late, morning_half_absent = calculate_late(df_in, cols_in, time_in)
     
     df_in['late'] = partial_late
@@ -86,8 +107,30 @@ def merge_files(df_in, df_out):
 
     df_biometric['left_early'] = left_early
     df_biometric['aftern_HD'] = afternoon_half_absent
+
+    df_biometric['forgot_punching'] = forgot_punching(df_biometric)
     return df_biometric
 
+def forgot_punching(df):
+    cols_forgot = df.columns
+    cols_forgot = cols_forgot[4:]
+    
+    # including 'clock_in_25', as clock_out_25 is not available
+    #cols_forgot = [col for col in cols_forgot if col not in ['clock_in_nan','clock_out_nan','clock_in_25']]
+    half = int(len(cols_forgot)/2)
+    cols_forgot1 = cols_forgot[:half]
+    cols_forgot2 = cols_forgot[half:]
+
+    # iterate the dateset
+    forgot_punching=[]
+    for _, row in df.iterrows():
+        fp = 0
+        for col1,col2 in cols_forgot1,cols_forgot2:
+            if (row[col1] == 0 and row[col2] != 0) or (row[col1] != 0 and row[col2] == 0):
+                fp += 1
+        forgot_punching.append(fp)
+    return forgot_punching
+    
 def calculate_late(df, cols, time_in):
         emp_id_exempted = ['GCU010013','GCU010017','GCU010025','GCU030010','GCU010005','GCU020004'] 
         partial_late = []
@@ -146,77 +189,6 @@ def modify_employee_id(emp_id):
         return 'GCU'+emp_id.zfill(6)
     else:
         return emp_id
-
-def split_file3(df):
-    start_name = 1
-    start_clock_in = 2
-    start_clock_out = 3
-    gap = 7
-
-    selected_index_name = list(range(start_name, len(df), gap))
-    selected_index_clock_in = list(range(start_clock_in, len(df), gap))
-    selected_index_clock_out = list(range(start_clock_out, len(df), gap))
-    
-    df_misc = df[df.index.isin(selected_index_name)]
-    df_clock_in = df[df.index.isin(selected_index_clock_in)]
-    df_clock_out = df[df.index.isin(selected_index_clock_out)]
-
-    df_clock_in.dropna(axis=1, how='all', inplace=True)
-    df_clock_out.dropna(axis=1, how='all', inplace=True)
-    
-    new_cols = ['Emp ID','Emp Name','ToT Days','Present','Absent']
-    df_misc =df_misc[new_cols]
-    df_misc['Emp ID'] = df_misc['Emp ID'].apply(lambda x: 'GCU0'+ str(x))
-
-    df_clock_in.columns = [f'clock_in_{i}' for i in range(df_clock_in.shape[1])]
-    df_clock_out.columns = [f'clock_out_{i}' for i in range(df_clock_out.shape[1])]
-
-    df_clock_in.drop(['clock_in_0'], inplace=True, axis=1)
-    df_clock_out.drop(['clock_out_0'], inplace=True, axis=1)
-    
-    df_misc.reset_index(inplace=True, drop=True)
-    df_clock_in.reset_index(inplace=True, drop=True)
-    df_clock_out.reset_index(inplace=True, drop=True)
-    #df_misc.head()
-   
-    df_in = pd.concat([df_misc, df_clock_in], axis=1)
-    df_out = pd.concat([df_misc, df_clock_out], axis=1)
-    
-    df_in = df_in.fillna(0)
-    df_out = df_out.fillna(0)
-    df_all = pd.concat([df_in, df_clock_out], axis=1)
-    return df_all, df_in, df_out
-
-def merge_files3(df_in, df_out):
-    time_in = (8, 45)
-    time_out = (15, 50)
-
-    cols_in = df_in.columns[5:]
-    cols_out = df_out.columns[5:]
-    partial_late, morning_half_absent = calculate_late(df_in, cols_in, time_in)
-    
-    df_in['late'] = partial_late              # late_before_9_15
-    df_in['morn_HD'] = morning_half_absent
-    
-    df_biometric = df_in[['Emp ID', 'Emp Name', 'ToT Days','Present', 'Absent', 'late', 'morn_HD']]
-    #df_biometric = df_in
-    #df_biometric = pd.concat([df_in, df_out], axis=1)
-    
-    left_early, afternoon_half_absent = calculate_early(df_out, cols_out, time_out)
-    #df_out['leaving_before_time'] = left_early
-
-    df_biometric['left_early'] = left_early
-    df_biometric['aftern_HD'] = afternoon_half_absent
-    return df_biometric
-
-def find_cols(cols):
-    no_cols = int((len(cols)-2)/2)
-    exempted_cols = ['Emp ID', 'Name']
-    for i in range(1, no_cols+1):
-        exempted_cols.append(f'Day{i}')
-    return exempted_cols
-
-
 def preprocess_erp_leaves(df):
     # remove unwanted columns and rows
     df.drop(['Serial No.', 'Location', 'Timeline', 'Request Date', 'From Date', 'To Date'], inplace=True, axis=1)
@@ -244,3 +216,11 @@ def cal_mismatch(row):
         return False
     else:
         return True
+        
+def find_cols(cols):
+    no_cols = int((len(cols)-2)/2)
+    exempted_cols = ['Emp ID', 'Name']
+    for i in range(1, no_cols+1):
+        exempted_cols.append(f'Day{i}')
+    return exempted_cols
+
