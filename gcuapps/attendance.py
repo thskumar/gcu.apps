@@ -5,7 +5,10 @@ import numpy as np
 #import openpyxl
 import utility as ut # My utility file
 
-# leave data from ERP -> emp leave dashboard, give dates and search
+# leave data from ERP -> emp leave dashboard, give dates and search. Include 'Total_no'
+# Master emp data -> employees->employee list->export
+# save it as csv in data as data/emp_master_data.csv. No other changes required
+
 #@st.cache_data
 #def convert_df(df):
     # IMPORTANT: Cache the conversion to prevent computation on every rerun
@@ -97,6 +100,25 @@ def app():
 
     df_erp.columns = list(df_erp.loc[5])
     df_erp = df_erp[6:]
+    
+    #---------------------------------------------------------------------
+    # This section handles the Extra ordinary leaves
+    df_extraordleave = df_erp[(df_erp['Leave Type']=='Extraordinary Leave') & (df_erp['Status']=='Approved')]
+    
+    # remove rows with EOL from main dataset
+    df_no_extraordleave = df_erp[~df_erp['Employee ID'].isin(df_extraordleave['Employee ID'])]
+    
+    # rename columns and convert to numeric
+    df_extraordleave.rename( columns = {'Total Days':'extr ord leaves','Employee ID':'Emp ID'}, inplace=True)
+    df_extraordleave["extr ord leaves"] = pd.to_numeric(df_extraordleave["extr ord leaves"], errors='coerce')
+    
+    # groupby and add all the Extra ordinary leave individually and convert to dataframe
+    leave_eol_list = df_extraordleave.groupby('Emp ID')['extr ord leaves'].sum()
+    leave_eol_dict = leave_eol_list.to_dict()
+    df_approved_eol_final = pd.DataFrame(leave_eol_dict.items(), columns=['Emp ID','extr ord leaves'])
+        
+    #------------------------------------------------------------------------------
+    # This section splits the leave dataset into - approved and pending
 
     df_leave_pending, df_leave_approved = ut.preprocess_erp_leaves(df_erp)
 
@@ -151,13 +173,21 @@ def app():
     df_faculty_final.fillna(0, inplace=True)
     df_admin_final.fillna(0, inplace=True)
 
-    # Number of working days and holidays (teaching)
+    # Number of working days and holidays (teaching) - General
     working_days = df_faculty_final['Present'].mode()[0]
     holidays = df_faculty_final['Absent'].mode()[0]
 
-    # Number of working days and holidays (non teaching)
-    working_days_staff = working_days
+    # Number of working days and holidays (non teaching) - General
+    working_days_staff = df_admin_final['Present'].mode()[0]
     holidays_staff = df_admin_final['Absent'].mode()[0]
+    
+    # Number of working days and holidays (teaching) - July 2024
+    #working_days = 18
+    #holidays = df_faculty_final['Absent'].mode()[0]
+
+    # Number of working days and holidays (non teaching) - July 2024
+    #working_days_staff = 24
+    #holidays_staff = df_admin_final['Absent'].mode()[0]
 
     # late faculties
     df_faculty_final['late'] = df_faculty_final['late'] - df_faculty_final['exempted_late']
@@ -175,17 +205,20 @@ def app():
     df_admin_final['mismatch'] = df_admin_final.apply(ut.cal_mismatch, axis=1)
     df_admin_mismatch = df_admin_final[df_admin_final.mismatch == True]
 
-    # The final report teaching
+    # The final report teaching merges with EOL dataset
     #'Emp ID','Name','Designation','Department','sanctioned leaves'
     df_final_report = df_faculty_final.copy()
+    df_final_report = pd.merge( df_final_report, df_approved_eol_final, how='left', on='Emp ID')
+    df_final_report.fillna(0, inplace=True)
+    
     #df_final_report['leave allowed'] = df_final_report['sanctioned leaves']
     df_final_report['leave allowed'] = df_final_report['sanctioned leaves'] + \
                                     df_final_report['exempted_hd']*0.5 + df_final_report['exempted_fd']
     df_final_report['working days'] = int(working_days)
     df_final_report['Absent'] = df_final_report.apply(lambda x: x['leave allowed'] if x['leave allowed']>x['Absent'] else x['working days']-x['Present'], axis=1)
-    df_final_report['unauthorised leave'] = df_final_report.apply(lambda x: 0 if x['leave allowed']>x['Absent'] else x['Absent']-x['leave allowed'], axis=1)
+    df_final_report['unauthorised leave'] = df_final_report.apply(lambda x: 0 if x['leave allowed']>x['Absent'] else x['Absent']-x['leave allowed']+x['extr ord leaves'], axis=1)
 
-    df_final_report=df_final_report[['Emp ID','Name','Designation','Department','working days','Present','Absent','leave allowed','unauthorised leave']]
+    df_final_report=df_final_report[['Emp ID','Name','Designation','Department','working days','Present','Absent','leave allowed','extr ord leaves','unauthorised leave']]
     #'Emp ID','Name','Designation','Department','working days','Present','Absent','leave allowed','unauthorise leave'
 
 
@@ -209,14 +242,17 @@ def app():
     # The final report non-teaching
     # 'Emp ID','Name','Designation','Department','sanctioned leaves'
     df_final_rep_nt = df_admin_final.copy()
+    df_final_rep_nt = pd.merge( df_final_rep_nt, df_approved_eol_final, how='left', on='Emp ID')
+    df_final_rep_nt.fillna(0, inplace=True)
+    
     df_final_rep_nt['leave allowed'] = df_final_rep_nt['sanctioned leaves'] + \
                                            df_final_rep_nt['exempted_hd'] * 0.5 + df_final_rep_nt['exempted_fd']
     df_final_rep_nt['working days'] = int(working_days_staff)
     df_final_rep_nt['Absent'] = df_final_rep_nt.apply(lambda x: x['leave allowed'] if x['leave allowed']>x['Absent'] else x['working days']-x['Present'], axis=1)
-    df_final_rep_nt['unauthorised leave'] = df_final_rep_nt.apply(lambda x: 0 if x['leave allowed']>x['Absent'] else x['Absent']-x['leave allowed'], axis=1)
+    df_final_rep_nt['unauthorised leave'] = df_final_rep_nt.apply(lambda x: 0 if x['leave allowed']>x['Absent'] else x['Absent']-x['leave allowed']+x['extr ord leaves'], axis=1)
     
     #st.write(df_final_rep_nt.head())
-    df_final_report_nt = df_final_rep_nt[['Emp ID', 'Name', 'Designation', 'Department', 'working days', 'Present', 'Absent', 'leave allowed',
+    df_final_report_nt = df_final_rep_nt[['Emp ID', 'Name', 'Designation', 'Department', 'working days', 'Present', 'Absent', 'leave allowed','extr ord leaves',
              'unauthorised leave']]
 
     # Saving the final excel
@@ -235,3 +271,14 @@ def app():
             file_name=f'report_staffs.xlsx',
             mime="application/zip"
         )
+
+
+
+
+
+
+
+
+
+
+
