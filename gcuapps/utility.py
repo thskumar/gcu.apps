@@ -47,7 +47,7 @@ def split_file(df):
         df_clock_out.drop(['clock_out_nan'], inplace=True, axis=1) 
 
         # droping 25 as we don't have data
-        df_clock_in.drop(['clock_in_25'], inplace=True, axis=1) 
+        #df_clock_in.drop(['clock_in_25'], inplace=True, axis=1) 
 
         # drop all columns with no entry
         df_biometric.dropna(axis=1, how='all', inplace=True)
