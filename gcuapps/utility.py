@@ -144,7 +144,8 @@ def calculate_late(df, cols, time_in):
             for col in cols:
                 if row[col] != 0:
                     hr = str(row[col]).split(':')[0]
-                    min = str(row[col]).split(':')[1]
+                    #min = str(row[col]).split(':')[1]
+                    min = 30
                     # time_in = (9, 25); 
                     if row['Emp ID'] in emp_id_exempted:            # from 9:26 till 9:59
                         if (int(hr) == 9 and int(min) > 25) :
