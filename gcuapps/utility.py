@@ -91,8 +91,8 @@ def merge_files(df_in, df_out):
     
     # exclude 25 this time as no data is available (it was excluded for summer break
     # Now added again as there was some bug
-    cols_in = [col for col in cols_in if col not in ['clock_in_nan','clock_in_25']]
-    cols_out = [col for col in cols_out if col not in ['clock_out_nan']
+    cols_in = [col for col in cols_in if col not in ['clock_in_nan']]
+    cols_out = [col for col in cols_out if col not in ['clock_out_nan']]
                 
     partial_late, morning_half_absent = calculate_late(df_in, cols_in, time_in)
     
