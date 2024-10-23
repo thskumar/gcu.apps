@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 #import xlrd
 #import openpyxl
+from iteration_utilities import duplicates
 import utility as ut # My utility file
 
 # leave data from ERP -> emp leave dashboard, give dates and search. Include 'Total_no'
@@ -29,6 +30,16 @@ def app():
     # split the dataframe depending on the in-time and out-time and process them
     if biometric_GCU1 is not None:
         df_gcu1_all, df_in1, df_out1 = ut.split_file(biometric_GCU1)
+        
+        # Find out all the duplicates in a list, modify such duplicates by adding some indices.
+        df_in1_cols = list(df_in1.columns)
+        df_in1_cols_duplicate = list(duplicates(df_in1_cols))
+        df_out1_cols = list(df_out1.columns)
+        df_out1_cols_duplicate = list(duplicates(df_out1_cols))
+        
+        df_in1.columns = ut.decode_duplicate(df_in1_cols, df_in1_cols_duplicate)
+        df_out1.columns = ut.decode_duplicate(df_out1_cols, df_out1_cols_duplicate)
+        
         df_biometric_GCU1 = ut.merge_files(df_in1, df_out1)
         #st.write(df_biometric_GCU1.head())
     else:
@@ -45,6 +56,16 @@ def app():
     # split the dataframe depending on the in-time and out-time
     if biometric_gips is not None:
         df_pharma_all, df_pharma_in, df_pharma_out = ut.split_file(biometric_gips)
+
+        # Find out all the duplicates in a list, modify such duplicates by adding some indices.
+        df_pharma_in_cols = list(df_pharma_in.columns)
+        df_pharma_in_cols_duplicate = list(duplicates(df_pharma_in_cols))
+        df_pharma_out_cols = list(df_pharma_out.columns)
+        df_pharma_out_cols_duplicate = list(duplicates(df_pharma_out_cols))
+        
+        df_pharma_in.columns = ut.decode_duplicate(df_pharma_in_cols, df_pharma_in_cols_duplicate)
+        df_pharma_out.columns = ut.decode_duplicate(df_pharma_out_cols, df_pharma_out_cols_duplicate)
+        
         df_biometric_Pharma = ut.merge_files(df_pharma_in, df_pharma_out)
         #st.write(df_biometric_Pharma.head())
     else:
@@ -65,6 +86,16 @@ def app():
     # split the dataframe depending on the in-time and out-time
     if biometric_admin is not None:
         df_admin_all, df_admin_in, df_admin_out = ut.split_file(biometric_admin)
+
+        # Find out all the duplicates in a list, modify such duplicates by adding some indices.
+        df_admin_in_cols = list(df_admin_in.columns)
+        df_admin_in_cols_duplicate = list(duplicates(df_admin_in_cols))
+        df_admin_out_cols = list(df_admin_out.columns)
+        df_admin_out_cols_duplicate = list(duplicates(df_admin_out_cols))
+        
+        df_admin_in.columns = ut.decode_duplicate(df_admin_in_cols, df_admin_in_cols_duplicate)
+        df_admin_out.columns = ut.decode_duplicate(df_admin_out_cols, df_admin_out_cols_duplicate)
+        
         df_biometric_admin = ut.merge_files(df_admin_in, df_admin_out)
         # st.write(df_biometric_Pharma.head())
     else:
