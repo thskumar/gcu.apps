@@ -226,3 +226,11 @@ def find_cols(cols):
         exempted_cols.append(f'Day{i}')
     return exempted_cols
 
+def decode_duplicate(mylist, duplicate):
+    final_list=[]
+    for index, value in enumerate(mylist):
+        if value in duplicate:
+            final_list.append(str(value)+'_'+str(index))
+        else:
+            final_list.append(value) 
+    return final_list
