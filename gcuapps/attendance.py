@@ -205,11 +205,17 @@ def app():
     df_admin_final.fillna(0, inplace=True)
 
     # Number of working days and holidays (teaching) - General
-    working_days = df_faculty_final['Present'].mode()[0]
+    working_days_all = df_faculty_final.Present.value_counts()
+    working_day_1 = working_days_all.index[0]
+    working_day_2 = working_days_all.index[1]
+    working_days = max(working_day_1, working_day_2)
     holidays = df_faculty_final['Absent'].mode()[0]
 
     # Number of working days and holidays (non teaching) - General
-    working_days_staff = df_admin_final['Present'].mode()[0]
+    working_days_staff = df_admin_final.Present.value_counts()
+    working_day_1 = working_days_staff.index[0]
+    working_day_2 = working_days_staff.index[1]
+    working_days_staff = max(working_day_1, working_day_2)
     holidays_staff = df_admin_final['Absent'].mode()[0]
     
     # Number of working days and holidays (teaching) - July 2024
