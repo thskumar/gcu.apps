@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+from iteration_utilities import duplicates
 #import xlrd
 #import openpyxl
-from iteration_utilities import duplicates
 import utility as ut # My utility file
 
 # leave data from ERP -> emp leave dashboard, give dates and search. Include 'Total_no'
@@ -31,6 +31,14 @@ def app():
     if biometric_GCU1 is not None:
         df_gcu1_all, df_in1, df_out1 = ut.split_file(biometric_GCU1)
         
+        #------------------------this is added as there were two dates 24 sep
+        #cols_in_gcu = list(df_in1.columns)
+        #cols_in_gcu[-2]= 'clock_in_242'
+        #cols_out_gcu = list(df_out1.columns)
+        #cols_out_gcu[-2]= 'clock_out_242'
+        #df_in1.columns = cols_in_gcu
+        #df_out1.columns = cols_out_gcu
+        
         # Find out all the duplicates in a list, modify such duplicates by adding some indices.
         df_in1_cols = list(df_in1.columns)
         df_in1_cols_duplicate = list(duplicates(df_in1_cols))
@@ -40,6 +48,7 @@ def app():
         df_in1.columns = ut.decode_duplicate(df_in1_cols, df_in1_cols_duplicate)
         df_out1.columns = ut.decode_duplicate(df_out1_cols, df_out1_cols_duplicate)
         
+        #-----------------------
         df_biometric_GCU1 = ut.merge_files(df_in1, df_out1)
         #st.write(df_biometric_GCU1.head())
     else:
@@ -56,7 +65,14 @@ def app():
     # split the dataframe depending on the in-time and out-time
     if biometric_gips is not None:
         df_pharma_all, df_pharma_in, df_pharma_out = ut.split_file(biometric_gips)
-
+        #------------------------this is added as there were two dates 24 sep
+        #cols_in_gips = list(df_pharma_in.columns)
+        #cols_in_gips[-2]= 'clock_in_242'
+        #cols_out_gips = list(df_pharma_out.columns)
+        #cols_out_gips[-2]= 'clock_out_242'
+        #df_pharma_in.columns = cols_in_gips
+        #df_pharma_out.columns = cols_out_gips
+        
         # Find out all the duplicates in a list, modify such duplicates by adding some indices.
         df_pharma_in_cols = list(df_pharma_in.columns)
         df_pharma_in_cols_duplicate = list(duplicates(df_pharma_in_cols))
@@ -66,6 +82,7 @@ def app():
         df_pharma_in.columns = ut.decode_duplicate(df_pharma_in_cols, df_pharma_in_cols_duplicate)
         df_pharma_out.columns = ut.decode_duplicate(df_pharma_out_cols, df_pharma_out_cols_duplicate)
         
+        #-----------------------
         df_biometric_Pharma = ut.merge_files(df_pharma_in, df_pharma_out)
         #st.write(df_biometric_Pharma.head())
     else:
@@ -86,7 +103,7 @@ def app():
     # split the dataframe depending on the in-time and out-time
     if biometric_admin is not None:
         df_admin_all, df_admin_in, df_admin_out = ut.split_file(biometric_admin)
-
+        
         # Find out all the duplicates in a list, modify such duplicates by adding some indices.
         df_admin_in_cols = list(df_admin_in.columns)
         df_admin_in_cols_duplicate = list(duplicates(df_admin_in_cols))
@@ -96,6 +113,7 @@ def app():
         df_admin_in.columns = ut.decode_duplicate(df_admin_in_cols, df_admin_in_cols_duplicate)
         df_admin_out.columns = ut.decode_duplicate(df_admin_out_cols, df_admin_out_cols_duplicate)
         
+        #-----------------------
         df_biometric_admin = ut.merge_files(df_admin_in, df_admin_out)
         # st.write(df_biometric_Pharma.head())
     else:
@@ -205,27 +223,24 @@ def app():
     df_admin_final.fillna(0, inplace=True)
 
     # Number of working days and holidays (teaching) - General
-    working_days_all = df_faculty_final.Present.value_counts()
-    working_day_1 = working_days_all.index[0]
-    working_day_2 = working_days_all.index[1]
-    working_days = max(working_day_1, working_day_2)
+    # Calculation of Working Days
+    working_days = df_faculty_final.Present.value_counts()
+    working_day_1 = working_days.index[0]
+    working_day_2 = working_days.index[1]
+    working_day = max(working_day_1, working_day_2)
+    #working_days = df_faculty_final['Present'].mode()[0]
     holidays = df_faculty_final['Absent'].mode()[0]
 
     # Number of working days and holidays (non teaching) - General
+    # Calculation of Working Days
     working_days_staff = df_admin_final.Present.value_counts()
     working_day_1 = working_days_staff.index[0]
     working_day_2 = working_days_staff.index[1]
     working_days_staff = max(working_day_1, working_day_2)
+    #working_days_staff = df_admin_final['Present'].mode()[0]
     holidays_staff = df_admin_final['Absent'].mode()[0]
     
-    # Number of working days and holidays (teaching) - July 2024
-    #working_days = 18
-    #holidays = df_faculty_final['Absent'].mode()[0]
-
-    # Number of working days and holidays (non teaching) - July 2024
-    #working_days_staff = 24
-    #holidays_staff = df_admin_final['Absent'].mode()[0]
-
+    
     # late faculties
     df_faculty_final['late'] = df_faculty_final['late'] - df_faculty_final['exempted_late']
     faculty_late = df_faculty_final[df_faculty_final.late > 2]
@@ -251,7 +266,7 @@ def app():
     #df_final_report['leave allowed'] = df_final_report['sanctioned leaves']
     df_final_report['leave allowed'] = df_final_report['sanctioned leaves'] + \
                                     df_final_report['exempted_hd']*0.5 + df_final_report['exempted_fd']
-    df_final_report['working days'] = int(working_days)
+    df_final_report['working days'] = int(working_day)
     df_final_report['Absent'] = df_final_report.apply(lambda x: x['leave allowed'] if x['leave allowed']>x['Absent'] else x['working days']-x['Present'], axis=1)
     df_final_report['unauthorised leave'] = df_final_report.apply(lambda x: 0 if x['leave allowed']>x['Absent'] else x['Absent']-x['leave allowed']+x['extr ord leaves'], axis=1)
 
