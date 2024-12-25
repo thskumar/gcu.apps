@@ -10,7 +10,7 @@ def read_file():
 """
 
 def split_file(df):
-        # pinking up the dates
+        # pinking up the dates; do padding with 0s in the right if required.
         dates = list(df.loc[6])
         dates = [str(item).zfill(2) for item in dates]
         #dates = dates[2:]
@@ -38,6 +38,18 @@ def split_file(df):
         #print(dates)
         df_clock_in.columns = [f'clock_in_{d}' for d in dates]
         df_clock_out.columns = [f'clock_out_{d}' for d in dates]
+        
+        # -------------------------------------------------------------------   
+        # I have to do a yogar as there are two 24s
+        #col_in = list(df_clock_in.columns)                       # yogar
+        #col_out = list(df_clock_out.columns)
+
+        #col_in[0] = 'clock_in_241'
+        #col_out[0] = 'clock_out_241'
+
+        #df_clock_in.columns = col_in
+        #df_clock_out.columns = col_out
+        # ------------------------------------------------------------------- 
 
         # drop unwanted columns
         # biometric.drop(['Monthly Attendance Summary'],  inplace=True, axis=1)
@@ -89,9 +101,9 @@ def merge_files(df_in, df_out):
     cols_in = df_in.columns[4:]
     cols_out = df_out.columns[4:]
     
-    # exclude 25 this time as no data is available (it was excluded for summer break
-    # Now added again as there was some bug
-    cols_in = [col for col in cols_in if col not in ['clock_in_nan']]
+    # exclude 25 this time as no data is available
+    # included again after summer break
+    cols_in = [col for col in cols_in if col not in ['clock_in_nan']]#,'clock_in_25']]
     cols_out = [col for col in cols_out if col not in ['clock_out_nan']]
                 
     partial_late, morning_half_absent = calculate_late(df_in, cols_in, time_in)
@@ -111,6 +123,7 @@ def merge_files(df_in, df_out):
 
     df_biometric['forgot_punching'] = forgot_punching(df_biometric)
     return df_biometric
+
 
 def forgot_punching(df):
     cols_forgot = df.columns
@@ -135,25 +148,23 @@ def forgot_punching(df):
 def calculate_late(df, cols, time_in):
         emp_id_exempted = ['GCU010013','GCU010017','GCU010025','GCU030010','GCU010005','GCU020004'] 
         partial_late = []
-        #full_late = []
         morning_half_absent = []
         for _, row in df.iterrows():
             # for each employee calcuate partial and full late and append in the list
             p_late = 0
-            #f_late = 0
             m_absent = 0
             for col in cols:
                 if row[col] != 0:
                     hr = str(row[col]).split(':')[0]
-                    #min = str(row[col]).split(':')[1]
-                    min = 30
+                    min = str(row[col]).split(':')[1]
+                    #min =30
                     # time_in = (9, 25); 
                     if row['Emp ID'] in emp_id_exempted:            # from 9:26 till 9:59
                         if (int(hr) == 9 and int(min) > 25) :
                             p_late += 1
                         elif (int(hr) > 9):          # more than 9
                             m_absent += 1
-                    # time_in = (8, 45); between 8:45 and 9:15
+                    #time_in = (8, 45); between 8:45 and 9:15
                     elif (int(hr) == time_in[0] and int(min) > time_in[1]) or (int(hr) == time_in[0]+1 and int(min) < 16):    
                         p_late += 1
                     elif (int(hr) == 9  and int(min) > 15) or (int(hr) > 9):          # 12:30 PM
