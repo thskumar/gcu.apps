@@ -19,6 +19,12 @@ def app():
     st.header('Attendance & Leave Calculation of GCU')
     st.text("It combines the output of Biometric data with the leaves sanctioned dataset from ERP")
 
+    # read working day manually
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        working_day = st.text_input("Enter number of working days:")
+
     # first file reading
     #st.write("Upload the first excel file :")
     uploaded_file = st.file_uploader("Upload the biometric file 1 (GIMT) in excel format", key=1)  # , key=key)  #key=f"{key}"
@@ -224,19 +230,20 @@ def app():
 
     # Number of working days and holidays (teaching) - General
     # Calculation of Working Days
-    working_days = df_faculty_final.Present.value_counts()
-    working_day_1 = working_days.index[0]
-    working_day_2 = working_days.index[1]
-    working_day = max(working_day_1, working_day_2)
+    #working_days = df_faculty_final.Present.value_counts()
+    #working_day_1 = working_days.index[0]
+    #working_day_2 = working_days.index[1]
+    #working_day = max(working_day_1, working_day_2)
     #working_days = df_faculty_final['Present'].mode()[0]
     holidays = df_faculty_final['Absent'].mode()[0]
 
     # Number of working days and holidays (non teaching) - General
     # Calculation of Working Days
-    working_days_staff = df_admin_final.Present.value_counts()
-    working_day_1 = working_days_staff.index[0]
-    working_day_2 = working_days_staff.index[1]
-    working_days_staff = max(working_day_1, working_day_2)
+    #working_days_staff = df_admin_final.Present.value_counts()
+    #working_day_1 = working_days_staff.index[0]
+    #working_day_2 = working_days_staff.index[1]
+    #working_days_staff = max(working_day_1, working_day_2)
+    working_days_staff = working_day
     #working_days_staff = df_admin_final['Present'].mode()[0]
     holidays_staff = df_admin_final['Absent'].mode()[0]
     
