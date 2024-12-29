@@ -24,7 +24,7 @@ class MultiApp:
         with st.sidebar:
             app = option_menu(
                 menu_title='GCU Applications ',
-                options=['Home', 'Score Card', 'Attendance'],
+                options=['Home', 'Score Card', 'Attendance','Results'],
                 icons=['house-fill', 'trophy-fill', 'person-circle'],
                 menu_icon='chat-text-fill',
                 default_index=1,
@@ -43,6 +43,8 @@ class MultiApp:
             scorecard.app()
         if app == "Attendance":
             attendance.app()
+        if app == "Results":
+            gcu_program_result.app()
 
 
     run()
