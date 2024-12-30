@@ -5,7 +5,7 @@ from fpdf import FPDF
 
 def app():
     st.header('Program-wise compilation of Results')
-    st.text("It get input from ERP as .csv and compiles in terms of - pass, promotted with backlogs and witheld")
+    st.text("It get input from ERP as .csv and compiles in terms of - pass, promoted with backlogs and withheld")
     
     # Getting data from the user ====================================================================================
     col1, col2, col3 = st.columns(3)
@@ -18,7 +18,7 @@ def app():
         year = st.selectbox("Select year:",
             options = ["2023","2024", "2025","2026","2027","2028", "2029","2030","2031","2032", "2033","2034"])
     with col3:
-        annual_semester = st.selectbox("Select Academic Type:", options = ["Annual","Semester"])
+        annual_semester = st.selectbox("Select Academic Type:", options = ["Year","Semester"])
     with col4:
         type = st.selectbox("Select exam type:", options = ["Regular","Repeater"])
     with col5:
@@ -121,9 +121,7 @@ def app():
         # The headings and Labels
         gcu = "Girijananda Chowdhury University"
         gcu_address = "Hathkhowapara, Azara, Guwahati, Assam 781017"
-        #report_name = "Grade Card"
-        #exam_name = f"End Semester Examination, {batch}"
-        exam_name = f"End Semester Examination, {info['session']}, {info['year']} "
+        exam_name = f"End Semester/Annual Examination, {info['session']}, {info['year']} "
 
         # 1. Set up the PDF doc basics
         pdf = FPDF('P', 'mm', 'A4')
@@ -144,8 +142,8 @@ def app():
         pdf.cell(200, 5, exam_name, align='C', ln=True) 
         pdf.ln(10)
         pdf.cell(130, 5, f"Program       \t\t\t\t   : {info['program']}", align='L', ln=False)  # , ln=True)
-        
-        pdf.cell(50, 5, f"Semester : {info['semester']} ({info['type']})", align='L', ln=True)  # , ln=True)
+
+        pdf.cell(50, 5, f"{info['annual_semester']}: {info['semester']} ({info['type']})", align='L', ln=True)  # , ln=True)
         pdf.cell(130, 5, f"Total appeared    : {info['total students appeared']}", align='L', ln=False)  # , ln=True)
         pdf.cell(30, 5, f"All Ceared : {info['students passed']}  ", align='L', ln=True)  # , ln=True)
         pdf.cell(40, 5, f"Passed      \t\t\t\t\t\t\t\t  : {info['pass percent']}% ", align='L', ln=True)  # , ln=True)
@@ -161,7 +159,7 @@ def app():
         pdf.ln(10)
 
         if (info['students witheld'] !=0 ):
-            output_df_pass_to_pdf(pdf, df_witheld, "The following candidate(s)'s result has been witheld:")
+            output_df_pass_to_pdf(pdf, df_witheld, "The following candidate(s)'s result has been withheld:")
             pdf.ln(10)
         
         # Controller of Examinations ========================================================== 
