@@ -121,7 +121,7 @@ def app():
         # The headings and Labels
         gcu = "Girijananda Chowdhury University"
         gcu_address = "Hathkhowapara, Azara, Guwahati, Assam 781017"
-        exam_name = f"End Semester/Annual Examination, {info['session']}, {info['year']} "
+        exam_name = f"Results of End Semester/Annual Examination, {info['session']}, {info['year']} "
 
         # 1. Set up the PDF doc basics
         pdf = FPDF('P', 'mm', 'A4')
@@ -145,9 +145,9 @@ def app():
 
         pdf.cell(50, 5, f"{info['annual_semester']}: {info['semester']} ({info['type']})", align='L', ln=True)  # , ln=True)
         pdf.cell(130, 5, f"Total appeared    : {info['total students appeared']}", align='L', ln=False)  # , ln=True)
-        pdf.cell(30, 5, f"All Ceared : {info['students passed']}  ", align='L', ln=True)  # , ln=True)
-        pdf.cell(40, 5, f"Passed      \t\t\t\t\t\t\t\t  : {info['pass percent']}% ", align='L', ln=True)  # , ln=True)
-        pdf.cell(130, 5, f"Witheld   \t\t\t\t\t\t\t\t\t\t   : {info['students witheld']}", align='L', ln=False)  # , ln=True)
+        pdf.cell(30, 5, f"Passed    : {info['students passed']}  ", align='L', ln=True)  # , ln=True)
+        pdf.cell(40, 5, f"Passed Percent \t\t\t\t\t  : {info['pass percent']}% ", align='L', ln=True)  # , ln=True)
+        pdf.cell(130, 5, f"Withheld   \t\t\t\t\t\t\t\t\t\t   : {info['students witheld']}", align='L', ln=False)  # , ln=True)
         pdf.cell(30, 5, f"Number of students with backlogs: {info['students failed']} ", align='L', ln=True)  # , ln=True)
         pdf.ln(10)
         
