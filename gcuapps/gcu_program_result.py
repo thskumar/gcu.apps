@@ -5,7 +5,7 @@ from fpdf import FPDF
 
 def app():
     st.header('Program-wise compilation of Results')
-    st.text("It get input from ERP as .csv and compiles in terms of - pass, promoted with backlogs and withheld")
+    st.text("It get input from ERP as .csv and compiles in terms of - pass, promotted with backlogs and witheld")
     
     # Getting data from the user ====================================================================================
     col1, col2, col3 = st.columns(3)
@@ -81,9 +81,13 @@ def app():
     # This gives students with CGPA - single student multiple entries
     final_result_with_cgpa = pd.merge(result,final_result_obtained_marks, how='right', on='Student ID')
     
+    # CGPA is being dropped for the time being
+    final_result_with_cgpa.drop('CGPA', axis=1, inplace=True)
+    
     # FAILED Studnets
     failed_student_multiple = final_result_with_cgpa[final_result_with_cgpa['Status']=='Fail']
-    failed_students = failed_student_multiple[['Student ID','Student Name','CGPA']]
+    #failed_students = failed_student_multiple[['Student ID','Student Name','CGPA']]
+    failed_students = failed_student_multiple[['Student ID','Student Name']]
     failed_students = failed_students.drop_duplicates()
     no_students_failed = len(failed_students)
     
@@ -95,7 +99,8 @@ def app():
     passed_student_multiple = final_result_with_cgpa[final_result_with_cgpa['Status']=='Pass']
     
     # This consists of some student who failed in at least one subject
-    passed_failed_students = passed_student_multiple[['Student ID','Student Name','CGPA']]
+    #passed_failed_students = passed_student_multiple[['Student ID','Student Name','CGPA']]
+    passed_failed_students = passed_student_multiple[['Student ID','Student Name']]
     passed_failed_students = passed_failed_students.drop_duplicates()
     final_passed_student = passed_failed_students[~passed_failed_students.apply(tuple,1).isin(failed_students.apply(tuple,1))]
     no_students_passed = len(final_passed_student)
@@ -121,7 +126,9 @@ def app():
         # The headings and Labels
         gcu = "Girijananda Chowdhury University"
         gcu_address = "Hathkhowapara, Azara, Guwahati, Assam 781017"
-        exam_name = f"Results of End Semester/Annual Examination, {info['session']}, {info['year']} "
+        #report_name = "Grade Card"
+        #exam_name = f"End Semester Examination, {batch}"
+        exam_name = f"End Semester/Annual Examination, {info['session']}, {info['year']} "
 
         # 1. Set up the PDF doc basics
         pdf = FPDF('P', 'mm', 'A4')
@@ -142,12 +149,12 @@ def app():
         pdf.cell(200, 5, exam_name, align='C', ln=True) 
         pdf.ln(10)
         pdf.cell(130, 5, f"Program       \t\t\t\t   : {info['program']}", align='L', ln=False)  # , ln=True)
-
+        
         pdf.cell(50, 5, f"{info['annual_semester']}: {info['semester']} ({info['type']})", align='L', ln=True)  # , ln=True)
         pdf.cell(130, 5, f"Total appeared    : {info['total students appeared']}", align='L', ln=False)  # , ln=True)
-        pdf.cell(30, 5, f"Passed    : {info['students passed']}  ", align='L', ln=True)  # , ln=True)
-        pdf.cell(40, 5, f"Passed Percent \t\t\t\t\t  : {info['pass percent']}% ", align='L', ln=True)  # , ln=True)
-        pdf.cell(130, 5, f"Withheld   \t\t\t\t\t\t\t\t\t\t   : {info['students witheld']}", align='L', ln=False)  # , ln=True)
+        pdf.cell(30, 5, f"All Ceared : {info['students passed']}  ", align='L', ln=True)  # , ln=True)
+        pdf.cell(40, 5, f"Passed      \t\t\t\t\t     : {info['pass percent']}% ", align='L', ln=True)  # , ln=True)
+        pdf.cell(130, 5, f"Witheld   \t\t\t\t\t\t\t\t\t\t   : {info['students witheld']}", align='L', ln=False)  # , ln=True)
         pdf.cell(30, 5, f"Number of students with backlogs: {info['students failed']} ", align='L', ln=True)  # , ln=True)
         pdf.ln(10)
         
@@ -159,12 +166,12 @@ def app():
         pdf.ln(10)
 
         if (info['students witheld'] !=0 ):
-            output_df_pass_to_pdf(pdf, df_witheld, "The following candidate(s)'s result has been withheld:")
+            output_df_pass_to_pdf(pdf, df_witheld, "The following candidate(s)'s result has been witheld:")
             pdf.ln(10)
         
         # Controller of Examinations ========================================================== 
         pdf.ln(20)
-        pdf.cell(130, 5, f"Date : {info['date']}", align='L', ln=False)  # , ln=True)
+        pdf.cell(130, 5, f"Date : {info['date']}", align='L', ln=False)  # , ln=True)  {info['program']}
         pdf.cell(50, 5, 'Controller of Examinations', align='L', ln=True)  # , ln=True)
         pdf.cell(120, 5, '', align='L', ln=False)  # , ln=True)
         pdf.cell(50, 5, f'{gcu}, Assam ', align='L', ln=True)  # , ln=True)
@@ -179,9 +186,11 @@ def app():
         cell_width_long = 70  # avg-long-vshort-original-short-short-vshort
         cell_width_short = 15  # 23-70-8-25-15-15-8
         cell_width_vshort = 10
-        cell_width_original = 25
+        cell_width_original = 35
 
-        width_sequence = [cell_width_vshort, cell_width_avg, cell_width_long, cell_width_vshort]
+        #width_sequence = [cell_width_vshort, cell_width_avg, cell_width_long, cell_width_vshort]
+        width_sequence = [cell_width_vshort, cell_width_avg, cell_width_long]
+
 
         # Select a font as Arial, bold, 8
         pdf.set_font('Arial', 'B', 8)
@@ -191,7 +200,7 @@ def app():
         cols = ["SL No."]
         cols.extend(df.columns)
 
-        pdf.cell(cell_width_avg, cell_height, " ", align='C', border=0)           # this is a ghost cell - blank cell
+        pdf.cell(cell_width_original, cell_height, " ", align='C', border=0)           # this is a ghost cell - blank cell
         for width, col in zip(width_sequence, cols):
             pdf.cell(width, cell_height, col, align='C', border=1)
 
@@ -203,7 +212,7 @@ def app():
         # Loop over to print each data in the table
         for row in range(0, len(df)):
             sl_flag = 1
-            pdf.cell(cell_width_avg, cell_height, " ", align='C', border=0)       # this is a ghost cell - blank cell
+            pdf.cell(cell_width_original, cell_height, " ", align='C', border=0)       # this is a ghost cell - blank cell
             for width, col in zip(width_sequence, cols):
                 if sl_flag == 1:
                     value = str(row+1)
@@ -217,20 +226,21 @@ def app():
         # A cell is a rectangular area, possibly framed, which contains some text
         # Set the width and height of cell
         cell_height = 6
-        cell_width_avg = 20  # originally 25; max width seems to be 200
-        cell_width_long = 105  # avg-long-vshort-original-short-short-vshort
+        cell_width_avg = 16  # originally 25; max width seems to be 200
+        cell_width_long = 130  # avg-long-vshort-original-short-short-vshort
         cell_width_short = 15  # 23-70-8-25-15-15-8
-        cell_width_vshort = 10
-        cell_width_original = 40
+        cell_width_vshort = 7
+        cell_width_original = 33
 
-        width_sequence = [cell_width_vshort, cell_width_avg, cell_width_original, cell_width_vshort, cell_width_long]
+        #width_sequence = [cell_width_vshort, cell_width_avg, cell_width_original, cell_width_vshort, cell_width_long]
+        width_sequence = [cell_width_vshort, cell_width_avg, cell_width_original, cell_width_long]
 
         # Select a font as Arial, bold, 8
-        pdf.set_font('Arial', 'B', 8)
+        pdf.set_font('Arial', 'B', 7)
         pdf.cell(200, 5, f"The following candidate(s) has/have not cleared in the particular course(s) shown:                        ", align='C', ln=True) 
     
         # Loop over to print column names
-        cols = ["SL No."]
+        cols = ["SL."]
         cols.extend(df.columns)
 
         #pdf.cell(cell_width_avg, cell_height, " ", align='C', border=0)
@@ -240,7 +250,7 @@ def app():
         # Line break
         pdf.ln(cell_height)
         # Select a font as Arial, regular, 10
-        pdf.set_font('Arial', '', 7)
+        pdf.set_font('Arial', '', 6)
 
         # Loop over to print each data in the table
         for row in range(0, len(df)):
