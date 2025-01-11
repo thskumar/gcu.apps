@@ -18,11 +18,11 @@ def app():
         year = st.selectbox("Select year:",
             options = ["2023","2024", "2025","2026","2027","2028", "2029","2030","2031","2032", "2033","2034"])
     with col3:
-        annual_semester = st.selectbox("Select Academic Type:", options = ["Year","Semester"])
+        annual_semester = st.selectbox("Select Academic Type (Year/Semester):", options = ["Year","Semester"])
     with col4:
         type = st.selectbox("Select exam type:", options = ["Regular","Repeater"])
     with col5:
-        semester = st.selectbox("Select Annual/Semester:", options = ["1","2","3","4","5","6","7","8"])
+        semester = st.selectbox("Select Annual/Semester No.:", options = ["1","2","3","4","5","6","7","8"])
     with col6:
         date = st.text_input("Result declaration date (dd-mm-yyyy):") 
     with col7:
