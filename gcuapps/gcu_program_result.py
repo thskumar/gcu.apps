@@ -5,7 +5,7 @@ from fpdf import FPDF
 
 def app():
     st.header('Program-wise compilation of Results')
-    st.text("It get input from ERP as .csv and compiles in terms of - pass, promotted with backlogs and witheld")
+    st.text("It get input from ERP as .csv and compiles in terms of - pass, promotted with backlogs and withheld")
     
     # Getting data from the user ====================================================================================
     col1, col2, col3 = st.columns(3)
@@ -106,7 +106,7 @@ def app():
     no_students_passed = len(final_passed_student)
     
     # WITHELD students
-    witheld_student = final_result_with_cgpa[final_result_with_cgpa['Status']=='Witheld']
+    witheld_student = final_result_with_cgpa[final_result_with_cgpa['Status']=='Withheld']
     witheld_student.drop(['Maximum Marks','Obtained Marks','Status','course code','sum'], axis=1, inplace=True)
     witheld_student = witheld_student.drop_duplicates()
     no_students_witheld = len(witheld_student)
@@ -154,7 +154,7 @@ def app():
         pdf.cell(130, 5, f"Total appeared    : {info['total students appeared']}", align='L', ln=False)  # , ln=True)
         pdf.cell(30, 5, f"All Ceared : {info['students passed']}  ", align='L', ln=True)  # , ln=True)
         pdf.cell(40, 5, f"Passed      \t\t\t\t\t     : {info['pass percent']}% ", align='L', ln=True)  # , ln=True)
-        pdf.cell(130, 5, f"Witheld   \t\t\t\t\t\t\t\t\t\t   : {info['students witheld']}", align='L', ln=False)  # , ln=True)
+        pdf.cell(130, 5, f"Withheld   \t\t\t\t\t\t\t\t\t\t   : {info['students witheld']}", align='L', ln=False)  # , ln=True)
         pdf.cell(30, 5, f"Number of students with backlogs: {info['students failed']} ", align='L', ln=True)  # , ln=True)
         pdf.ln(10)
         
@@ -166,7 +166,7 @@ def app():
         pdf.ln(10)
 
         if (info['students witheld'] !=0 ):
-            output_df_pass_to_pdf(pdf, df_witheld, "The following candidate(s)'s result has been witheld:")
+            output_df_pass_to_pdf(pdf, df_witheld, "The following candidate(s)'s result has been withheld:")
             pdf.ln(10)
         
         # Controller of Examinations ========================================================== 
