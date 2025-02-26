@@ -274,7 +274,7 @@ def app():
     df_final_report['leave allowed'] = df_final_report['sanctioned leaves'] + \
                                     df_final_report['exempted_hd']*0.5 + df_final_report['exempted_fd']
     df_final_report['working days'] = int(working_day)
-    #df_final_report['Present'] = df_final_report.apply(lambda x: int(working_day) if x['Present'] > int(working_day) else x['Present'])
+    # 
     df_final_report['Absent'] = df_final_report.apply(lambda x: x['leave allowed'] if x['leave allowed']>x['Absent'] else x['working days']-x['Present'], axis=1)
     df_final_report['unauthorised leave'] = df_final_report.apply(lambda x: 0 if x['leave allowed']>x['Absent'] else x['Absent']-x['leave allowed'], axis=1)
 
@@ -308,7 +308,7 @@ def app():
     df_final_rep_nt['leave allowed'] = df_final_rep_nt['sanctioned leaves'] + \
                                            df_final_rep_nt['exempted_hd'] * 0.5 + df_final_rep_nt['exempted_fd']
     df_final_rep_nt['working days'] = int(working_days_staff)
-    #df_final_rep_nt['Present'] = df_final_rep_nt.apply(lambda x: int(working_day) if x['Present'] > int(working_day) else x['Present'])
+    # 
     df_final_rep_nt['Absent'] = df_final_rep_nt.apply(lambda x: x['leave allowed'] if x['leave allowed']>x['Absent'] else x['working days']-x['Present'], axis=1)
     df_final_rep_nt['unauthorised leave'] = df_final_rep_nt.apply(lambda x: 0 if x['leave allowed']>x['Absent'] else x['Absent']-x['leave allowed'], axis=1)
     
