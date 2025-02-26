@@ -254,7 +254,7 @@ def app():
 
     # late non-teaching
     df_admin_final['late'] = df_admin_final['late'] - df_admin_final['exempted_late']
-    admin_late = df_admin_final[df_faculty_final.late > 2]
+    admin_late = df_admin_final[df_admin_final.late > 2]
 
     # present-leave mismatch
     df_faculty_final['mismatch'] = df_faculty_final.apply(ut.cal_mismatch, axis=1)
@@ -275,7 +275,7 @@ def app():
                                     df_final_report['exempted_hd']*0.5 + df_final_report['exempted_fd']
     df_final_report['working days'] = int(working_day)
     df_final_report['Absent'] = df_final_report.apply(lambda x: x['leave allowed'] if x['leave allowed']>x['Absent'] else x['working days']-x['Present'], axis=1)
-    df_final_report['unauthorised leave'] = df_final_report.apply(lambda x: 0 if x['leave allowed']>x['Absent'] else x['Absent']-x['leave allowed']+x['extr ord leaves'], axis=1)
+    df_final_report['unauthorised leave'] = df_final_report.apply(lambda x: 0 if x['leave allowed']>x['Absent'] else x['Absent']-(x['leave allowed']+x['extr ord leaves']), axis=1)
 
     df_final_report=df_final_report[['Emp ID','Name','Designation','Department','working days','Present','Absent','leave allowed','extr ord leaves','unauthorised leave']]
     #'Emp ID','Name','Designation','Department','working days','Present','Absent','leave allowed','unauthorise leave'
@@ -308,7 +308,7 @@ def app():
                                            df_final_rep_nt['exempted_hd'] * 0.5 + df_final_rep_nt['exempted_fd']
     df_final_rep_nt['working days'] = int(working_days_staff)
     df_final_rep_nt['Absent'] = df_final_rep_nt.apply(lambda x: x['leave allowed'] if x['leave allowed']>x['Absent'] else x['working days']-x['Present'], axis=1)
-    df_final_rep_nt['unauthorised leave'] = df_final_rep_nt.apply(lambda x: 0 if x['leave allowed']>x['Absent'] else x['Absent']-x['leave allowed']+x['extr ord leaves'], axis=1)
+    df_final_rep_nt['unauthorised leave'] = df_final_rep_nt.apply(lambda x: 0 if x['leave allowed']>x['Absent'] else x['Absent']-(x['leave allowed']+x['extr ord leaves']), axis=1)
     
     #st.write(df_final_rep_nt.head())
     df_final_report_nt = df_final_rep_nt[['Emp ID', 'Name', 'Designation', 'Department', 'working days', 'Present', 'Absent', 'leave allowed','extr ord leaves',
